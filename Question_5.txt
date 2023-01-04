@@ -1,0 +1,27 @@
+1. From my perspective the database design still can be optimize, it doesn't really need a additional table `TBL_ORDERS` to indicate the relationship between `TBL_CUSTOMERS` and `TBL_TRANSACTIONS` which possible to increase the query load. 
+
+
+2. Remove the table `TBL_ORDERS`, create a foreign key column `USERID` under table `TBL_TRANSACTIONS` which refer to the primary key `USERID` in table `TBL_CUSTOMERS`. 
+
+
+3a. 
+SELECT t0.NAME, IFNULL(SUM(t2.`QUANTITY`*t2.`UNIT_PRICE`), 0) AS TOTAL
+FROM tbl_customer t0
+LEFT JOIN tbl_orders t1 ON t0.USERID = t1.USERID
+LEFT JOIN tbl_transactions t2 ON t2.ORDERID = t1.ORDERID
+GROUP BY t0.USERID
+ORDER BY TOTAL DESC
+LIMIT 1;
+
+3b.
+SELECT DATE_FORMAT(CONVERT_TZ(TRANSACTION_DATE, '+00:00', '+8:00'), '%Y-%m-%d') AS 'Date', HOUR(CONVERT_TZ(TRANSACTION_DATE, '+00:00', '+8:00')) AS `Hour`, COUNT(ORDERID) AS `Number of transactions`
+FROM tbl_transactions
+GROUP BY DAY(CONVERT_TZ(TRANSACTION_DATE, '+00:00', '+8:00')), HOUR(CONVERT_TZ(TRANSACTION_DATE, '+00:00', '+8:00'));
+
+3c.
+SELECT GROUP_CONCAT(t2.ITEM) AS 'Fruits'
+FROM tbl_customer t0
+LEFT JOIN tbl_orders t1 ON t0.USERID = t1.USERID
+LEFT JOIN tbl_transactions t2 ON t2.ORDERID = t1.ORDERID
+WHERE t0.USERID = 1
+GROUP BY t0.USERID;
